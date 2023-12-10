@@ -8,6 +8,19 @@ class MovingQuestion extends StatefulWidget {
 }
 
 class MovingQuestionState extends State<MovingQuestion> {
+  List<String> answers = [
+    "I",
+    "ramen",
+    "noodles",
+    "eat",
+    "favourite",
+    "mine",
+    "My"
+  ];
+  String trueAnswer = "I eat ramen";
+  List unSelectedItems = [];
+  List selectedItems = [];
+
   Widget _buildQuestionBox(Size size) {
     ValueNotifier<bool> isTap = ValueNotifier(false);
     return Container(
@@ -58,7 +71,23 @@ class MovingQuestionState extends State<MovingQuestion> {
   }
 
   Widget _buildMovingItemBox(Size size) {
-    return Container();
+    return Container(
+      margin: const EdgeInsets.all(5.0),
+      child: Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          children: answers
+              .map<Widget>((e) => Container(
+                    margin: const EdgeInsets.all(5.0),
+                    child: ActionChip(
+                      onPressed: () {},
+                      label: Text(e, style: const TextStyle(fontSize: 16.0)),
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+    );
   }
 
   Widget _buildConfirmButton(Size size) {
