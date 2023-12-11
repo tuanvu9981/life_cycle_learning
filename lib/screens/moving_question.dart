@@ -68,25 +68,23 @@ class MovingQuestionState extends State<MovingQuestion> {
 
   Widget _buildSelectedArea(Size size) {
     return Container(
-      margin: const EdgeInsets.all(10.0),
-      child: Center(
-        child: Wrap(
-          alignment: WrapAlignment.start,
-          children: selectedItems
-              .map<Widget>((e) => Container(
-                    margin: const EdgeInsets.all(5.0),
-                    child: ActionChip(
-                      onPressed: () {
-                        setState(() {
-                          answers.add(e);
-                          selectedItems.remove(e);
-                        });
-                      },
-                      label: Text(e, style: const TextStyle(fontSize: 16.0)),
-                    ),
-                  ))
-              .toList(),
-        ),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 35.0),
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        children: selectedItems
+            .map<Widget>((e) => Container(
+                  margin: const EdgeInsets.all(5.0),
+                  child: ActionChip(
+                    onPressed: () {
+                      setState(() {
+                        answers.add(e);
+                        selectedItems.remove(e);
+                      });
+                    },
+                    label: Text(e, style: const TextStyle(fontSize: 16.0)),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -97,20 +95,30 @@ class MovingQuestionState extends State<MovingQuestion> {
       child: Center(
         child: Wrap(
           alignment: WrapAlignment.center,
-          children: answers
-              .map<Widget>((e) => Container(
-                    margin: const EdgeInsets.all(5.0),
-                    child: ActionChip(
-                      onPressed: () {
-                        setState(() {
-                          selectedItems.add(e);
-                          answers.remove(e);
-                        });
-                      },
-                      label: Text(e, style: const TextStyle(fontSize: 16.0)),
-                    ),
-                  ))
-              .toList(),
+          children: answers.map<Widget>((e) {
+            final key = GlobalKey(debugLabel: e);
+            return Container(
+              key: key,
+              margin: const EdgeInsets.all(5.0),
+              child: ActionChip(
+                onPressed: () {
+                  final renderObject = key.currentContext?.findRenderObject();
+                  final translation =
+                      renderObject?.getTransformTo(null).getTranslation();
+                  if (translation != null &&
+                      renderObject?.paintBounds != null) {
+                    final offset = Offset(translation.x, translation.y);
+                    print(renderObject!.paintBounds.shift(offset));
+                  }
+                  setState(() {
+                    selectedItems.add(e);
+                    answers.remove(e);
+                  });
+                },
+                label: Text(e, style: const TextStyle(fontSize: 16.0)),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );

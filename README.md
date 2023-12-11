@@ -7,3 +7,7 @@
 ### Example to illustrate didWidgetUpdated.
 
 ### Example about MovingQuestion in Duolinguo
+1. Get position by Key
+    - References: [StackOverflow](https://stackoverflow.com/questions/62029541/how-to-get-the-position-of-a-widget-in-the-screen-preferably-in-offset)
+    - printed out result: **Rect.fromLTRB(211.5, 590.7, 313.5, 648.7)**
+2.     
