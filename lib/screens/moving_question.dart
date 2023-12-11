@@ -18,8 +18,7 @@ class MovingQuestionState extends State<MovingQuestion> {
     "My"
   ];
   String trueAnswer = "I eat ramen";
-  List unSelectedItems = [];
-  List selectedItems = [];
+  List<String> selectedItems = [];
 
   Widget _buildQuestionBox(Size size) {
     ValueNotifier<bool> isTap = ValueNotifier(false);
@@ -31,6 +30,7 @@ class MovingQuestionState extends State<MovingQuestion> {
           Image.asset('assets/images/koduck.png', width: 120, height: 180),
           const SizedBox(width: 15.0),
           Container(
+            height: size.height * 0.1,
             padding: const EdgeInsets.all(10.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7.5),
@@ -67,20 +67,21 @@ class MovingQuestionState extends State<MovingQuestion> {
   }
 
   Widget _buildSelectedArea(Size size) {
-    return Container();
-  }
-
-  Widget _buildMovingItemBox(Size size) {
     return Container(
-      margin: const EdgeInsets.all(5.0),
+      margin: const EdgeInsets.all(10.0),
       child: Center(
         child: Wrap(
-          alignment: WrapAlignment.center,
-          children: answers
+          alignment: WrapAlignment.start,
+          children: selectedItems
               .map<Widget>((e) => Container(
                     margin: const EdgeInsets.all(5.0),
                     child: ActionChip(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          answers.add(e);
+                          selectedItems.remove(e);
+                        });
+                      },
                       label: Text(e, style: const TextStyle(fontSize: 16.0)),
                     ),
                   ))
@@ -90,10 +91,96 @@ class MovingQuestionState extends State<MovingQuestion> {
     );
   }
 
-  Widget _buildConfirmButton(Size size) {
+  Widget _buildMovingItemBox() {
+    return Container(
+      margin: const EdgeInsets.all(5.0),
+      child: Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          children: answers
+              .map<Widget>((e) => Container(
+                    margin: const EdgeInsets.all(5.0),
+                    child: ActionChip(
+                      onPressed: () {
+                        setState(() {
+                          selectedItems.add(e);
+                          answers.remove(e);
+                        });
+                      },
+                      label: Text(e, style: const TextStyle(fontSize: 16.0)),
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton(Size size, BuildContext context) {
     return GestureDetector(
-      onTap: () {},
-      child: Container(),
+      onTap: () {
+        showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Container(
+                height: size.height * 0.2,
+                color: Colors.lightGreen.shade300,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Congratulations!",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12.5),
+                      GestureDetector(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 20.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: const Text(
+                            "Continue",
+                            style: TextStyle(
+                              color: Colors.lightGreen,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.5,
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            });
+      },
+      child: Container(
+        margin: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: selectedItems.isEmpty ? Colors.grey.shade400 : Colors.green,
+        ),
+        child: Center(
+          child: Text(
+            "Confirm",
+            style: TextStyle(
+              fontSize: 16.0,
+              color: selectedItems.isEmpty ? Colors.black : Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -101,17 +188,45 @@ class MovingQuestionState extends State<MovingQuestion> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.lightBlue.shade200,
+        title: const Center(
+          child: Text(
+            "Lesson 1: Basic grammars",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(15.0),
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              _buildQuestionBox(size),
-              _buildSelectedArea(size),
-              _buildMovingItemBox(size),
-              _buildConfirmButton(size)
-            ],
+          child: SizedBox(
+            height: size.height * 0.8,
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _buildQuestionBox(size),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _buildSelectedArea(size),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _buildMovingItemBox(),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: _buildConfirmButton(size, context),
+                ),
+              ],
+            ),
           ),
         ),
       ),
