@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_cycle_learning/models/moving_item.dart';
 
 class MovingQuestion extends StatefulWidget {
   const MovingQuestion({super.key});
@@ -8,14 +9,14 @@ class MovingQuestion extends StatefulWidget {
 }
 
 class MovingQuestionState extends State<MovingQuestion> {
-  List<String> answers = [
-    "I",
-    "ramen",
-    "noodles",
-    "eat",
-    "favourite",
-    "mine",
-    "My"
+  List<MovingItem> answers = [
+    MovingItem("I", false),
+    MovingItem("ramen", false),
+    MovingItem("noodles", false),
+    MovingItem("eat", false),
+    MovingItem("favourite", false),
+    MovingItem("mine", false),
+    MovingItem("My", false),
   ];
   String trueAnswer = "I eat ramen";
   List<String> selectedItems = [];
@@ -77,8 +78,16 @@ class MovingQuestionState extends State<MovingQuestion> {
                   child: ActionChip(
                     onPressed: () {
                       setState(() {
-                        answers.add(e);
                         selectedItems.remove(e);
+                        answers = answers
+                            .map((item) {
+                              if (item.word == e) {
+                                item.isSelected = false;
+                              }
+                              return item;
+                            })
+                            .cast<MovingItem>()
+                            .toList();
                       });
                     },
                     label: Text(e, style: const TextStyle(fontSize: 16.0)),
@@ -95,30 +104,44 @@ class MovingQuestionState extends State<MovingQuestion> {
       child: Center(
         child: Wrap(
           alignment: WrapAlignment.center,
-          children: answers.map<Widget>((e) {
-            final key = GlobalKey(debugLabel: e);
-            return Container(
-              key: key,
-              margin: const EdgeInsets.all(5.0),
-              child: ActionChip(
-                onPressed: () {
-                  final renderObject = key.currentContext?.findRenderObject();
-                  final translation =
-                      renderObject?.getTransformTo(null).getTranslation();
-                  if (translation != null &&
-                      renderObject?.paintBounds != null) {
-                    final offset = Offset(translation.x, translation.y);
-                    print(renderObject!.paintBounds.shift(offset));
-                  }
-                  setState(() {
-                    selectedItems.add(e);
-                    answers.remove(e);
-                  });
-                },
-                label: Text(e, style: const TextStyle(fontSize: 16.0)),
-              ),
-            );
-          }).toList(),
+          children: answers
+              .map<Widget>((e) => Container(
+                    margin: const EdgeInsets.all(5.0),
+                    child: Stack(
+                      children: [
+                        Chip(
+                          label: Text(
+                            e.word!,
+                            style: TextStyle(color: Colors.grey.shade400),
+                          ),
+                          backgroundColor: Colors.grey.shade400,
+                        ),
+                        !e.isSelected!
+                            ? ActionChip(
+                                onPressed: () {
+                                  setState(() {
+                                    selectedItems.add(e.word!);
+                                    answers = answers
+                                        .map((item) {
+                                          if (item.word == e.word!) {
+                                            item.isSelected = true;
+                                          }
+                                          return item;
+                                        })
+                                        .cast<MovingItem>()
+                                        .toList();
+                                  });
+                                },
+                                label: Text(
+                                  e.word!,
+                                  style: const TextStyle(fontSize: 16.0),
+                                ),
+                              )
+                            : const SizedBox()
+                      ],
+                    ),
+                  ))
+              .toList(),
         ),
       ),
     );
@@ -127,50 +150,52 @@ class MovingQuestionState extends State<MovingQuestion> {
   Widget _buildConfirmButton(Size size, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
-            context: context,
-            builder: (context) {
-              return Container(
-                height: size.height * 0.2,
-                color: Colors.lightGreen.shade300,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Congratulations!",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.5,
-                        ),
-                      ),
-                      const SizedBox(height: 12.5),
-                      GestureDetector(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20.0,
-                          ),
-                          decoration: BoxDecoration(
+        if (selectedItems.isNotEmpty) {
+          showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return Container(
+                  height: size.height * 0.2,
+                  color: Colors.lightGreen.shade300,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Congratulations!",
+                          style: TextStyle(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(10.0),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.5,
                           ),
-                          child: const Text(
-                            "Continue",
-                            style: TextStyle(
-                              color: Colors.lightGreen,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.5,
+                        ),
+                        const SizedBox(height: 12.5),
+                        GestureDetector(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 20.0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: const Text(
+                              "Continue",
+                              style: TextStyle(
+                                color: Colors.lightGreen,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.5,
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              );
-            });
+                );
+              });
+        }
       },
       child: Container(
         margin: const EdgeInsets.all(10.0),
