@@ -8,16 +8,64 @@ class MovingQuestion extends StatefulWidget {
   MovingQuestionState createState() => MovingQuestionState();
 }
 
-class MovingQuestionState extends State<MovingQuestion> {
-  List<MovingItem> answers = [
-    MovingItem("I", false),
-    MovingItem("ramen", false),
-    MovingItem("noodles", false),
-    MovingItem("eat", false),
-    MovingItem("favourite", false),
-    MovingItem("mine", false),
-    MovingItem("My", false),
-  ];
+class MovingQuestionState extends State<MovingQuestion>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(milliseconds: 500),
+    vsync: this,
+  );
+
+  List<MovingItem> answers = [];
+
+  @override
+  void initState() {
+    answers = [
+      MovingItem(
+        "I",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "ramen",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "noodles",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "eat",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "favourite",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "mine",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+      MovingItem(
+        "My",
+        false,
+        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+            .animate(_controller),
+      ),
+    ];
+    super.initState();
+  }
+
   String trueAnswer = "I eat ramen";
   List<String> selectedItems = [];
 
@@ -70,31 +118,31 @@ class MovingQuestionState extends State<MovingQuestion> {
   Widget _buildSelectedArea(Size size) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 35.0),
-      child: Wrap(
-        alignment: WrapAlignment.start,
-        children: selectedItems
-            .map<Widget>((e) => Container(
-                  margin: const EdgeInsets.all(5.0),
-                  child: ActionChip(
-                    onPressed: () {
-                      setState(() {
-                        selectedItems.remove(e);
-                        answers = answers
-                            .map((item) {
-                              if (item.word == e) {
-                                item.isSelected = false;
-                              }
-                              return item;
-                            })
-                            .cast<MovingItem>()
-                            .toList();
-                      });
-                    },
-                    label: Text(e, style: const TextStyle(fontSize: 16.0)),
-                  ),
-                ))
-            .toList(),
-      ),
+      // child: Wrap(
+      //   alignment: WrapAlignment.start,
+      //   children: selectedItems
+      //       .map<Widget>((e) => Container(
+      //             margin: const EdgeInsets.all(5.0),
+      //             child: ActionChip(
+      //               onPressed: () {
+      //                 setState(() {
+      //                   selectedItems.remove(e);
+      //                   answers = answers
+      //                       .map((item) {
+      //                         if (item.word == e) {
+      //                           item.isSelected = false;
+      //                         }
+      //                         return item;
+      //                       })
+      //                       .cast<MovingItem>()
+      //                       .toList();
+      //                 });
+      //               },
+      //               label: Text(e, style: const TextStyle(fontSize: 16.0)),
+      //             ),
+      //           ))
+      // .toList(),
+      // ),
     );
   }
 
@@ -117,24 +165,33 @@ class MovingQuestionState extends State<MovingQuestion> {
                           backgroundColor: Colors.grey.shade400,
                         ),
                         !e.isSelected!
-                            ? ActionChip(
-                                onPressed: () {
-                                  setState(() {
-                                    selectedItems.add(e.word!);
-                                    answers = answers
-                                        .map((item) {
-                                          if (item.word == e.word!) {
-                                            item.isSelected = true;
-                                          }
-                                          return item;
-                                        })
-                                        .cast<MovingItem>()
-                                        .toList();
-                                  });
-                                },
-                                label: Text(
-                                  e.word!,
-                                  style: const TextStyle(fontSize: 16.0),
+                            ? SlideTransition(
+                                position: e.offsetAnimation!,
+                                child: ActionChip(
+                                  onPressed: () {
+                                    setState(() {
+                                      answers = answers
+                                          .map((item) {
+                                            if (item.word == e.word) {
+                                              item.isSelected = false;
+                                              item.offsetAnimation =
+                                                  Tween<Offset>(
+                                                begin: Offset.zero,
+                                                end: const Offset(0, -5.0),
+                                              ).animate(_controller);
+                                            }
+                                            return item;
+                                          })
+                                          .cast<MovingItem>()
+                                          .toList();
+                                    });
+                                    _controller.reset();
+                                    _controller.forward();
+                                  },
+                                  label: Text(
+                                    e.word!,
+                                    style: const TextStyle(fontSize: 16.0),
+                                  ),
                                 ),
                               )
                             : const SizedBox()
