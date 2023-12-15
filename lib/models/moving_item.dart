@@ -4,6 +4,7 @@ class MovingItem {
   String? word;
   bool? isSelected;
   Animation<Offset>? offsetAnimation;
+  int? index;
 
-  MovingItem(this.word, this.isSelected, this.offsetAnimation);
+  MovingItem(this.word, this.isSelected, this.offsetAnimation, this.index);
 }

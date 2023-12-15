@@ -9,11 +9,37 @@ class MovingQuestion extends StatefulWidget {
 }
 
 class MovingQuestionState extends State<MovingQuestion>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(milliseconds: 500),
-    vsync: this,
-  );
+    with TickerProviderStateMixin {
+  late final List<AnimationController> _controllers = [
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+    AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    ),
+  ];
 
   List<MovingItem> answers = [];
 
@@ -24,43 +50,50 @@ class MovingQuestionState extends State<MovingQuestion>
         "I",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[0]),
+        0,
       ),
       MovingItem(
         "ramen",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[1]),
+        1,
       ),
       MovingItem(
         "noodles",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[2]),
+        2,
       ),
       MovingItem(
         "eat",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[3]),
+        3,
       ),
       MovingItem(
         "favourite",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[4]),
+        4,
       ),
       MovingItem(
         "mine",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[5]),
+        5,
       ),
       MovingItem(
         "My",
         false,
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controller),
+            .animate(_controllers[6]),
+        6,
       ),
     ];
     super.initState();
@@ -178,15 +211,15 @@ class MovingQuestionState extends State<MovingQuestion>
                                                   Tween<Offset>(
                                                 begin: Offset.zero,
                                                 end: const Offset(0, -5.0),
-                                              ).animate(_controller);
+                                              ).animate(_controllers[e.index!]);
                                             }
                                             return item;
                                           })
                                           .cast<MovingItem>()
                                           .toList();
                                     });
-                                    _controller.reset();
-                                    _controller.forward();
+                                    _controllers[e.index!].reset();
+                                    _controllers[e.index!].forward();
                                   },
                                   label: Text(
                                     e.word!,
