@@ -43,6 +43,16 @@ class MovingQuestionState extends State<MovingQuestion>
 
   List<MovingItem> answers = [];
 
+  List<GlobalKey> keys = [
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
+  ];
+
   @override
   void initState() {
     answers = [
@@ -201,6 +211,7 @@ class MovingQuestionState extends State<MovingQuestion>
                             ? SlideTransition(
                                 position: e.offsetAnimation!,
                                 child: ActionChip(
+                                  key: keys[e.index!],
                                   onPressed: () {
                                     setState(() {
                                       answers = answers
@@ -220,6 +231,15 @@ class MovingQuestionState extends State<MovingQuestion>
                                     });
                                     _controllers[e.index!].reset();
                                     _controllers[e.index!].forward();
+                                    final renderBox = keys[e.index!]
+                                        .currentContext
+                                        ?.findRenderObject();
+                                    final translation = renderBox
+                                        ?.getTransformTo(null)
+                                        .getTranslation();
+                                    final offset =
+                                        Offset(translation!.x, translation.y);
+                                    print(offset);
                                   },
                                   label: Text(
                                     e.word!,
@@ -325,30 +345,37 @@ class MovingQuestionState extends State<MovingQuestion>
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(15.0),
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            height: size.height * 0.8,
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: _buildQuestionBox(size),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: _buildSelectedArea(size),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: _buildMovingItemBox(),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: _buildConfirmButton(size, context),
-                ),
-              ],
+        child: GestureDetector(
+          onTapDown: (details) {
+            final tapPosition = details.globalPosition;
+            print("dx: ${tapPosition.dx}, dy: ${tapPosition.dy}");
+            _controllers[1].reverse();
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(15.0),
+            physics: const BouncingScrollPhysics(),
+            child: SizedBox(
+              height: size.height * 0.8,
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildQuestionBox(size),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: _buildSelectedArea(size),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: _buildMovingItemBox(),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: _buildConfirmButton(size, context),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
