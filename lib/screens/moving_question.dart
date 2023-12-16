@@ -43,6 +43,12 @@ class MovingQuestionState extends State<MovingQuestion>
 
   List<MovingItem> answers = [];
 
+  @override
+  void dispose() {
+    _controllers.map((e) => e.dispose());
+    super.dispose();
+  }
+
   List<GlobalKey> keys = [
     GlobalKey(),
     GlobalKey(),
@@ -207,47 +213,46 @@ class MovingQuestionState extends State<MovingQuestion>
                           ),
                           backgroundColor: Colors.grey.shade400,
                         ),
-                        !e.isSelected!
-                            ? SlideTransition(
-                                position: e.offsetAnimation!,
-                                child: ActionChip(
-                                  key: keys[e.index!],
-                                  onPressed: () {
-                                    setState(() {
-                                      answers = answers
-                                          .map((item) {
-                                            if (item.word == e.word) {
-                                              item.isSelected = false;
-                                              item.offsetAnimation =
-                                                  Tween<Offset>(
-                                                begin: Offset.zero,
-                                                end: const Offset(0, -5.0),
-                                              ).animate(_controllers[e.index!]);
-                                            }
-                                            return item;
-                                          })
-                                          .cast<MovingItem>()
-                                          .toList();
-                                    });
-                                    _controllers[e.index!].reset();
-                                    _controllers[e.index!].forward();
-                                    final renderBox = keys[e.index!]
-                                        .currentContext
-                                        ?.findRenderObject();
-                                    final translation = renderBox
-                                        ?.getTransformTo(null)
-                                        .getTranslation();
-                                    final offset =
-                                        Offset(translation!.x, translation.y);
-                                    print(offset);
-                                  },
-                                  label: Text(
-                                    e.word!,
-                                    style: const TextStyle(fontSize: 16.0),
-                                  ),
-                                ),
-                              )
-                            : const SizedBox()
+                        SlideTransition(
+                          position: e.offsetAnimation!,
+                          child: ActionChip(
+                            key: keys[e.index!],
+                            onPressed: () {
+                              setState(() {
+                                answers = answers
+                                    .map((item) {
+                                      if (item.word == e.word) {
+                                        item.isSelected = true;
+                                        item.offsetAnimation = Tween<Offset>(
+                                          begin: Offset.zero,
+                                          end: const Offset(0, -5),
+                                        ).animate(_controllers[e.index!]);
+                                      }
+                                      return item;
+                                    })
+                                    .cast<MovingItem>()
+                                    .toList();
+                              });
+                              _controllers[e.index!].reset();
+                              _controllers[e.index!].forward();
+                              final renderBox = keys[e.index!]
+                                  .currentContext
+                                  ?.findRenderObject() as RenderBox;
+                              final offset =
+                                  renderBox.localToGlobal(Offset.zero);
+                              final size = renderBox.size;
+
+                              print(
+                                  "offset (dx-left: ${offset.dx} dy-top: ${offset.dy})");
+                              print(
+                                  "width: ${size.width}, height: ${size.height}");
+                            },
+                            label: Text(
+                              e.word!,
+                              style: const TextStyle(fontSize: 16.0),
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ))
@@ -257,7 +262,7 @@ class MovingQuestionState extends State<MovingQuestion>
     );
   }
 
-  Widget _buildConfirmButton(Size size, BuildContext context) {
+  Widget _buildConfirmButton(Size size, BuildContext context, int counter) {
     return GestureDetector(
       onTap: () {
         if (selectedItems.isNotEmpty) {
@@ -311,14 +316,14 @@ class MovingQuestionState extends State<MovingQuestion>
         margin: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
-          color: selectedItems.isEmpty ? Colors.grey.shade400 : Colors.green,
+          color: counter == 0 ? Colors.grey.shade400 : Colors.green,
         ),
         child: Center(
           child: Text(
             "Confirm",
             style: TextStyle(
               fontSize: 16.0,
-              color: selectedItems.isEmpty ? Colors.black : Colors.white,
+              color: counter == 0 ? Colors.black : Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -330,6 +335,8 @@ class MovingQuestionState extends State<MovingQuestion>
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
+    int counter = answers.where((e) => e.isSelected == true).toList().length;
+    // heigh: 841.85 - width: 400
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlue.shade200,
@@ -372,7 +379,7 @@ class MovingQuestionState extends State<MovingQuestion>
                   ),
                   Expanded(
                     flex: 1,
-                    child: _buildConfirmButton(size, context),
+                    child: _buildConfirmButton(size, context, counter),
                   ),
                 ],
               ),
