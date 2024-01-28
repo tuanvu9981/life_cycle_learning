@@ -59,6 +59,9 @@ class MovingQuestionState extends State<MovingQuestion>
     GlobalKey(),
   ];
 
+  final double movingOffsetY = 5;
+  final double movingOffsetX = 0;
+
   @override
   void initState() {
     answers = [
@@ -68,6 +71,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[0]),
         0,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "ramen",
@@ -75,6 +79,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[1]),
         1,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "noodles",
@@ -82,6 +87,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[2]),
         2,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "eat",
@@ -89,6 +95,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[3]),
         3,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "favourite",
@@ -96,6 +103,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[4]),
         4,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "mine",
@@ -103,6 +111,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[5]),
         5,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
       MovingItem(
         "My",
@@ -110,6 +119,7 @@ class MovingQuestionState extends State<MovingQuestion>
         Tween<Offset>(begin: Offset.zero, end: Offset.zero)
             .animate(_controllers[6]),
         6,
+        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
       ),
     ];
     super.initState();
@@ -117,6 +127,35 @@ class MovingQuestionState extends State<MovingQuestion>
 
   String trueAnswer = "I eat ramen";
   List<String> selectedItems = [];
+
+  MovingCoordinates getNewCoordinates(GlobalKey widgetKey) {
+    final renderBox = widgetKey.currentContext?.findRenderObject() as RenderBox;
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    print("offset (dx-left: ${offset.dx} dy-top: ${offset.dy})");
+    print("width: ${size.width}, height: ${size.height}");
+    return MovingCoordinates(
+      offset.dy,
+      offset.dy,
+      offset.dx,
+      offset.dx + size.width,
+    );
+  }
+
+  bool isTouchedPointInAnswerWidget(
+    Offset touchedPoint,
+    MovingCoordinates answerWidget,
+  ) {
+    double dy = touchedPoint.dy;
+    double dx = touchedPoint.dx;
+
+    bool isDyBetween = dy <= answerWidget.newDown && dy >= answerWidget.newUp;
+    bool isDxBetween =
+        dx <= answerWidget.newRight && dx >= answerWidget.newLeft;
+
+    return isDyBetween && isDxBetween;
+  }
 
   Widget _buildQuestionBox(Size size) {
     ValueNotifier<bool> isTap = ValueNotifier(false);
@@ -167,31 +206,6 @@ class MovingQuestionState extends State<MovingQuestion>
   Widget _buildSelectedArea(Size size) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 35.0),
-      // child: Wrap(
-      //   alignment: WrapAlignment.start,
-      //   children: selectedItems
-      //       .map<Widget>((e) => Container(
-      //             margin: const EdgeInsets.all(5.0),
-      //             child: ActionChip(
-      //               onPressed: () {
-      //                 setState(() {
-      //                   selectedItems.remove(e);
-      //                   answers = answers
-      //                       .map((item) {
-      //                         if (item.word == e) {
-      //                           item.isSelected = false;
-      //                         }
-      //                         return item;
-      //                       })
-      //                       .cast<MovingItem>()
-      //                       .toList();
-      //                 });
-      //               },
-      //               label: Text(e, style: const TextStyle(fontSize: 16.0)),
-      //             ),
-      //           ))
-      // .toList(),
-      // ),
     );
   }
 
@@ -223,9 +237,12 @@ class MovingQuestionState extends State<MovingQuestion>
                                     .map((item) {
                                       if (item.word == e.word) {
                                         item.isSelected = true;
+                                        item.newPosition =
+                                            getNewCoordinates(keys[e.index!]);
                                         item.offsetAnimation = Tween<Offset>(
                                           begin: Offset.zero,
-                                          end: const Offset(0, -5),
+                                          end: Offset(
+                                              movingOffsetX, -movingOffsetY),
                                         ).animate(_controllers[e.index!]);
                                       }
                                       return item;
@@ -235,17 +252,6 @@ class MovingQuestionState extends State<MovingQuestion>
                               });
                               _controllers[e.index!].reset();
                               _controllers[e.index!].forward();
-                              final renderBox = keys[e.index!]
-                                  .currentContext
-                                  ?.findRenderObject() as RenderBox;
-                              final offset =
-                                  renderBox.localToGlobal(Offset.zero);
-                              final size = renderBox.size;
-
-                              print(
-                                  "offset (dx-left: ${offset.dx} dy-top: ${offset.dy})");
-                              print(
-                                  "width: ${size.width}, height: ${size.height}");
                             },
                             label: Text(
                               e.word!,
@@ -355,8 +361,20 @@ class MovingQuestionState extends State<MovingQuestion>
         child: GestureDetector(
           onTapDown: (details) {
             final tapPosition = details.globalPosition;
-            print("dx: ${tapPosition.dx}, dy: ${tapPosition.dy}");
-            _controllers[1].reverse();
+            print("dx: ${tapPosition.dx}, dy: ${tapPosition.dy}\n\n");
+
+            for (int i = 0; i < _controllers.length; i++) {
+              if (answers[i].isSelected) {
+                print("text selected: ${answers[i].word}");
+                final checkBetween = isTouchedPointInAnswerWidget(
+                  tapPosition,
+                  answers[i].newPosition,
+                );
+                if (checkBetween) {
+                  _controllers[i].reverse();
+                }
+              }
+            }
           },
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(15.0),
