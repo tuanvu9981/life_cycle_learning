@@ -136,8 +136,8 @@ class MovingQuestionState extends State<MovingQuestion>
     print("offset (dx-left: ${offset.dx} dy-top: ${offset.dy})");
     print("width: ${size.width}, height: ${size.height}");
     return MovingCoordinates(
-      offset.dy,
-      offset.dy,
+      offset.dy - size.height * movingOffsetY,
+      offset.dy - size.height * (movingOffsetY - 1),
       offset.dx,
       offset.dx + size.width,
     );
