@@ -10,6 +10,9 @@ class LifeCycleDragApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final texts = ["I", "ramen", "noodles", "eat", "favourite", "mine", "My"];
+    const trueAnswer = "I eat ramen";
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
@@ -17,7 +20,7 @@ class LifeCycleDragApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MovingQuestion(),
+      home: MovingQuestion(texts: texts, trueAnswer: trueAnswer),
     );
   }
 }

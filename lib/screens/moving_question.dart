@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:life_cycle_learning/models/moving_item.dart';
 
 class MovingQuestion extends StatefulWidget {
-  const MovingQuestion({super.key});
+  final List<String> texts;
+  final String trueAnswer;
+  const MovingQuestion({
+    super.key,
+    required this.texts,
+    required this.trueAnswer,
+  });
 
   @override
   MovingQuestionState createState() => MovingQuestionState();
@@ -10,38 +16,13 @@ class MovingQuestion extends StatefulWidget {
 
 class MovingQuestionState extends State<MovingQuestion>
     with TickerProviderStateMixin {
-  late final List<AnimationController> _controllers = [
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-    AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    ),
-  ];
+  final double movingOffsetY = 5;
+  final double movingOffsetX = 0;
 
-  List<MovingItem> answers = [];
+  late List<GlobalKey> keys;
+  late List<AnimationController> _controllers;
+  late List<MovingItem> answers;
+  List<String> currentAnswer = [];
 
   @override
   void dispose() {
@@ -49,84 +30,32 @@ class MovingQuestionState extends State<MovingQuestion>
     super.dispose();
   }
 
-  List<GlobalKey> keys = [
-    GlobalKey(),
-    GlobalKey(),
-    GlobalKey(),
-    GlobalKey(),
-    GlobalKey(),
-    GlobalKey(),
-    GlobalKey(),
-  ];
-
-  final double movingOffsetY = 5;
-  final double movingOffsetX = 0;
-
   @override
   void initState() {
-    answers = [
-      MovingItem(
-        "I",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[0]),
-        0,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "ramen",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[1]),
-        1,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "noodles",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[2]),
-        2,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "eat",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[3]),
-        3,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "favourite",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[4]),
-        4,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "mine",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[5]),
-        5,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
-      MovingItem(
-        "My",
-        false,
-        Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-            .animate(_controllers[6]),
-        6,
-        MovingCoordinates(0.0, 0.0, 0.0, 0.0),
-      ),
+    keys = [for (int i = 0; i < widget.texts.length; i++) GlobalKey()];
+
+    _controllers = [
+      for (int i = 0; i < widget.texts.length; i++)
+        AnimationController(
+          duration: const Duration(milliseconds: 250),
+          vsync: this,
+        ),
     ];
+
+    answers = <MovingItem>[
+      for (int i = 0; i < _controllers.length; i++)
+        MovingItem(
+          widget.texts[i],
+          false,
+          Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+              .animate(_controllers[0]),
+          i,
+          MovingCoordinates(0.0, 0.0, 0.0, 0.0),
+        )
+    ];
+
     super.initState();
   }
-
-  String trueAnswer = "I eat ramen";
-  List<String> selectedItems = [];
 
   MovingCoordinates getNewCoordinates(GlobalKey widgetKey) {
     final renderBox = widgetKey.currentContext?.findRenderObject() as RenderBox;
@@ -236,6 +165,7 @@ class MovingQuestionState extends State<MovingQuestion>
                                 answers = answers
                                     .map((item) {
                                       if (item.word == e.word) {
+                                        currentAnswer.add(item.word!);
                                         item.isSelected = true;
                                         item.newPosition =
                                             getNewCoordinates(keys[e.index!]);
@@ -271,7 +201,10 @@ class MovingQuestionState extends State<MovingQuestion>
   Widget _buildConfirmButton(Size size, BuildContext context, int counter) {
     return GestureDetector(
       onTap: () {
-        if (selectedItems.isNotEmpty) {
+        print("currentAnswer: $currentAnswer");
+        final compared =
+            currentAnswer.join(" ").trim().compareTo(widget.trueAnswer);
+        if (compared == 0) {
           showModalBottomSheet(
               context: context,
               builder: (context) {
@@ -341,7 +274,7 @@ class MovingQuestionState extends State<MovingQuestion>
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
-    int counter = answers.where((e) => e.isSelected == true).toList().length;
+    int counter = currentAnswer.length;
     // heigh: 841.85 - width: 400
     return Scaffold(
       appBar: AppBar(
@@ -372,6 +305,18 @@ class MovingQuestionState extends State<MovingQuestion>
                 );
                 if (checkBetween) {
                   _controllers[i].reverse();
+                  setState(() {
+                    answers = answers
+                        .map((item) {
+                          if (item.word == answers[i].word) {
+                            item.isSelected = false;
+                            currentAnswer.removeWhere((e) => e == item.word);
+                          }
+                          return item;
+                        })
+                        .cast<MovingItem>()
+                        .toList();
+                  });
                 }
               }
             }
